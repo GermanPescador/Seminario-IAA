@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.c">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="NeticaEx.c">
+      <Filter>Source Netica</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Netica.h">
+      <Filter>Source Netica</Filter>
+    </ClInclude>
+    <ClInclude Include="NeticaEx.h">
+      <Filter>Source Netica</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="Netica.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Netica.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source">
+      <UniqueIdentifier>{92a37f3b-7a13-4c34-8ec1-01f0923e906a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Netica">
+      <UniqueIdentifier>{3ef420f7-f5d9-4d2b-b107-4ef5089cb87f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
