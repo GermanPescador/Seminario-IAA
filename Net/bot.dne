@@ -1,0 +1,249 @@
+// ~->[DNET-1]->~
+
+// File created by an unlicensed user using Netica 6.02 on Apr 04, 2017 at 23:27:35 UTC.
+
+bnet bot {
+AutoCompile = TRUE;
+autoupdate = TRUE;
+whenchanged = 1491348455;
+
+visual V1 {
+	defdispform = BELIEFBARS;
+	nodelabeling = TITLE;
+	NodeMaxNumEntries = 50;
+	nodefont = font {shape= "Arial"; size= 9;};
+	linkfont = font {shape= "Arial"; size= 9;};
+	ShowLinkStrengths = 1;
+	windowposn = (106, -10, 991, 352);
+	resolution = 72;
+	drawingbounds = (1403, 720);
+	showpagebreaks = FALSE;
+	usegrid = TRUE;
+	gridspace = (6, 6);
+	NodeSet Node {BuiltIn = 1; Color = 0x00e1e1e1;};
+	NodeSet Nature {BuiltIn = 1; Color = 0x00f8eed2;};
+	NodeSet Deterministic {BuiltIn = 1; Color = 0x00d3caa6;};
+	NodeSet Finding {BuiltIn = 1; Color = 0x00c8c8c8;};
+	NodeSet Constant {BuiltIn = 1; Color = 0x00ffffff;};
+	NodeSet ConstantValue {BuiltIn = 1; Color = 0x00ffffb4;};
+	NodeSet Utility {BuiltIn = 1; Color = 0x00ffbdbd;};
+	NodeSet Decision {BuiltIn = 1; Color = 0x00dee8ff;};
+	NodeSet Documentation {BuiltIn = 1; Color = 0x00f0fafa;};
+	NodeSet Title {BuiltIn = 1; Color = 0x00ffffff;};
+	PrinterSetting A {
+		margins = (1270, 1270, 1270, 1270);
+		};
+	};
+
+node S_t {
+	discrete = TRUE;
+	states = (Atacar, BuscarArmas, BuscarEnergia, Explorar, Huir, DetectarPeligro);
+	kind = NATURE;
+	parents = ();
+	ExperBase = 1;
+	whenchanged = 1490190664;
+	belief = (0.1666667, 0.1666667, 0.1666666, 0.1666667, 0.1666667, 0.1666667);
+	visual V1 {
+		center = (108, 72);
+		height = 1;
+		};
+	};
+
+node S_tMas1 {
+	discrete = TRUE;
+	states = (Atacar, BuscarArmas, BuscarEnergia, Explorar, Huir, DetectarPeligro);
+	kind = NATURE;
+	chance = CHANCE;
+	parents = (S_t);
+	probs = 
+		// Atacar       BuscarArmas  BuscarEnergia Explorar    Huir         DetectarPeligro  // S_t             
+		  (0.8,         0.02,        0.05,        0.01,        0.1,         0.02,         // Atacar          
+		   0.01,        0.7,         0.02,        0.1,         0.01,        0.16,         // BuscarArmas     
+		   0.01,        0.02,        0.8,         0.07,        0.07,        0.03,         // BuscarEnergia   
+		   0.04,        0.04,        0.01,        0.7,         0.01,        0.2,          // Explorar        
+		   0.01,        0.01,        0.1,         0.01,        0.85,        0.02,         // Huir            
+		   0.4,         0.04,        0.03,        0.03,        0.3,         0.2);         // DetectarPeligro ;
+	numcases = 1;
+	whenchanged = 1490188347;
+	belief = (0.2116667, 0.1383333, 0.1683333, 0.1533333, 0.2233334, 0.105);
+	visual V1 {
+		center = (408, 180);
+		height = 5;
+		};
+	};
+
+node Health {
+	discrete = TRUE;
+	states = (Alto, Bajo);
+	kind = NATURE;
+	chance = CHANCE;
+	parents = (S_tMas1);
+	probs = 
+		// Alto         Bajo          // S_tMas1         
+		  (0.75,        0.25,         // Atacar          
+		   0.6,         0.4,          // BuscarArmas     
+		   0.3,         0.7,          // BuscarEnergia   
+		   0.8,         0.2,          // Explorar        
+		   0.15,        0.85,         // Huir            
+		   0.55,        0.45);        // DetectarPeligro ;
+	whenchanged = 1490188872;
+	belief = (0.5061666, 0.4938334);
+	visual V1 {
+		center = (462, 42);
+		height = 2;
+		};
+	};
+
+node Weapon {
+	discrete = TRUE;
+	states = (Armado, Desarmado);
+	kind = NATURE;
+	chance = CHANCE;
+	parents = (S_tMas1);
+	probs = 
+		// Armado       Desarmado     // S_tMas1         
+		  (0.99,        0.01,         // Atacar          
+		   0.1,         0.9,          // BuscarArmas     
+		   0.4,         0.6,          // BuscarEnergia   
+		   0.8,         0.2,          // Explorar        
+		   0.3,         0.7,          // Huir            
+		   0.45,        0.55);        // DetectarPeligro ;
+	whenchanged = 1490189035;
+	belief = (0.5276333, 0.4723667);
+	visual V1 {
+		center = (648, 90);
+		height = 4;
+		link 1 {
+			path = ((509, 143), (580, 116));
+			};
+		};
+	};
+
+node OpponentsWeapon {
+	discrete = TRUE;
+	states = (Armado, Desarmado);
+	kind = NATURE;
+	chance = CHANCE;
+	parents = (S_tMas1);
+	probs = 
+		// Armado       Desarmado     // S_tMas1         
+		  (0.4,         0.6,          // Atacar          
+		   0.7,         0.3,          // BuscarArmas     
+		   0.6,         0.4,          // BuscarEnergia   
+		   0.5,         0.5,          // Explorar        
+		   0.7,         0.3,          // Huir            
+		   0.5,         0.5);         // DetectarPeligro ;
+	whenchanged = 1490189212;
+	belief = (0.568, 0.432);
+	visual V1 {
+		center = (672, 180);
+		height = 3;
+		};
+	};
+
+node HeardNoise {
+	discrete = TRUE;
+	states = (Si, No);
+	kind = NATURE;
+	chance = CHANCE;
+	parents = (S_tMas1);
+	probs = 
+		// Si           No            // S_tMas1         
+		  (0.7,         0.3,          // Atacar          
+		   0.6,         0.4,          // BuscarArmas     
+		   0.65,        0.35,         // BuscarEnergia   
+		   0.3,         0.7,          // Explorar        
+		   0.6,         0.4,          // Huir            
+		   0.8,         0.2);         // DetectarPeligro ;
+	whenchanged = 1490189389;
+	belief = (0.6045833, 0.3954166);
+	visual V1 {
+		center = (654, 288);
+		height = 6;
+		link 1 {
+			path = ((509, 224), (596, 262));
+			};
+		};
+	};
+
+node NearEnemies {
+	discrete = TRUE;
+	states = (Muchos, Pocos);
+	kind = NATURE;
+	chance = CHANCE;
+	parents = (S_tMas1);
+	probs = 
+		// Muchos       Pocos         // S_tMas1         
+		  (0.3,         0.7,          // Atacar          
+		   0.45,        0.55,         // BuscarArmas     
+		   0.6,         0.4,          // BuscarEnergia   
+		   0.4,         0.6,          // Explorar        
+		   0.8,         0.2,          // Huir            
+		   0.2,         0.8);         // DetectarPeligro ;
+	whenchanged = 1490189787;
+	belief = (0.48775, 0.51225);
+	visual V1 {
+		center = (594, 372);
+		height = 7;
+		};
+	};
+
+node PackWeapon {
+	discrete = TRUE;
+	states = (Si, No);
+	kind = NATURE;
+	chance = CHANCE;
+	parents = (S_tMas1);
+	probs = 
+		// Si           No            // S_tMas1         
+		  (0.5,         0.5,          // Atacar          
+		   0.9,         0.1,          // BuscarArmas     
+		   0.45,        0.55,         // BuscarEnergia   
+		   0.6,         0.4,          // Explorar        
+		   0.3,         0.7,          // Huir            
+		   0.4,         0.6);         // DetectarPeligro ;
+	whenchanged = 1490189948;
+	belief = (0.5070833, 0.4929167);
+	visual V1 {
+		center = (420, 366);
+		height = 8;
+		};
+	};
+
+node PackHealth {
+	discrete = TRUE;
+	states = (Si, No);
+	kind = NATURE;
+	chance = CHANCE;
+	parents = (S_tMas1);
+	probs = 
+		// Si           No            // S_tMas1         
+		  (0.7,         0.3,          // Atacar          
+		   0.2,         0.8,          // BuscarArmas     
+		   0.9,         0.1,          // BuscarEnergia   
+		   0.6,         0.4,          // Explorar        
+		   0.2,         0.8,          // Huir            
+		   0.45,        0.55);        // DetectarPeligro ;
+	whenchanged = 1490190177;
+	belief = (0.51125, 0.48875);
+	visual V1 {
+		center = (240, 366);
+		height = 9;
+		};
+	};
+
+node NOTE1 {
+	discrete = FALSE;
+	kind = CONSTANT;
+	parents = ();
+	title = "\FF\FEJ\00o\00r\00g\00e\00 \00S\00i\00e\00r\00r\00a\00 \00A\00c\00o\00s\00t\00a\00\n\00G\00e\00r\
+		\00m\00\E1\00n\00 \00P\00e\00s\00c\00a\00d\00o\00r\00 \00B\00a\00r\00r\00e\00t\00o\00\n\00C\00a\
+		\00r\00l\00o\00s\00 \00G\00a\00r\00c\00\ED\00a\00 \00G\00o\00n\00z\00\E1\00l\00e\00z\00";
+	whenchanged = 1490189447;
+	visual V1 {
+		center = (912, 167);
+		height = 10;
+		};
+	};
+ElimOrder = (Health, Weapon, OpponentsWeapon, HeardNoise, NearEnemies, PackWeapon, PackHealth, S_t, S_tMas1);
+};

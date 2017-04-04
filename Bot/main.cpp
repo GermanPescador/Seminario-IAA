@@ -2,122 +2,175 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <iostream>
 #include "Netica.h"
 #include "NeticaEx.h"
 
-#define CHKERR  {if (GetError_ns (env, ERROR_ERR, NULL))  goto error;}
+void CheckError() {
+	if (GetError_ns(env, ERROR_ERR, nullptr)) {
+		const char* msg = ErrorMessage_ns(GetError_ns(env, ERROR_ERR, nullptr));
+		throw std::runtime_error(msg);
+	}
+}
 
 extern environ_ns *env;
 
 int main (void){
 	net_bn *net;
-	node_bn *VisitAsia, *Tuberculosis, *Smoking, *Cancer, *TbOrCa, *XRay;
+	node_bn *s_t, *s_t_next, *health, *weapon, *opponents_weapon, *heard_noise, *near_enemies, *pack_weapon, *pack_health;
 	double belief;
 	char mesg[MESG_LEN_ns];
 	int res;
 	
-	printf ("\nWelcome to Netica API!\n");
-	printf ("This demo project is from the first 2 examples of the Reference Manual.\n");
-	printf ("If it compiles, links and runs successfully (i.e. without generating\n");
-	printf ("errors), then your installation is probably good.\n");
-	printf ("Now you can replace the Demo.c file with your own code.\n");
-	printf ("--------------------------------------------------------------------\n\n");
+	try {
+		env = NewNeticaEnviron_ns(nullptr, nullptr, nullptr);
+		res = InitNetica2_bn(env, mesg);
+
+		printf ("%s\n", mesg);
+		if (res < 0)  return -1;
 	
-	env = NewNeticaEnviron_ns (NULL, NULL, NULL);
-	res = InitNetica2_bn (env, mesg);
+		net = NewNet_bn("BotNet", env);
+		CheckError();
 
-	printf ("%s\n", mesg);
-	if (res < 0)  return -1;
-	
-	net = NewNet_bn ("ChestClinic", env);
-	CHKERR
+		s_t				 = NewNode_bn("S_t", 6, net);
+		s_t_next		 = NewNode_bn("S_t_next", 6, net);
+		health			 = NewNode_bn("Health", 2, net);
+		weapon			 = NewNode_bn("Weapon", 2, net);
+		opponents_weapon = NewNode_bn("OpponentsWeapon", 2, net);
+		heard_noise		 = NewNode_bn("HeardNoise", 2, net);
+		near_enemies	 = NewNode_bn("NearEnemies", 2, net);
+		pack_weapon		 = NewNode_bn("PackWeapon", 2, net);
+		pack_health		 = NewNode_bn("PackHealth", 2, net);
+		CheckError();
 
-	VisitAsia =    NewNode_bn ("VisitAsia", 2, net);
-	Tuberculosis = NewNode_bn ("Tuberculosis", 2, net);
-	Smoking =      NewNode_bn ("Smoking", 2, net);
-	Cancer =       NewNode_bn ("Cancer", 2, net);
-	TbOrCa =       NewNode_bn ("TbOrCa", 2, net);
-	XRay =         NewNode_bn ("XRay", 2, net);
-	CHKERR
+		SetNodeStateNames_bn(s_t,      "Attack, SearchWeapon, SearchEnergy, Explore, Flee, DetectDanger");
+		SetNodeStateNames_bn(s_t_next, "Attack, SearchWeapon, SearchEnergy, Explore, Flee, DetectDanger");
+		SetNodeStateNames_bn(health, "High, Low");
+		SetNodeStateNames_bn(weapon, "Armed, Unarmed");
+		SetNodeStateNames_bn(opponents_weapon, "Armed, Unarmed");
+		SetNodeStateNames_bn(heard_noise, "Yes, No");
+		SetNodeStateNames_bn(near_enemies, "Many, Few");
+		SetNodeStateNames_bn(pack_weapon, "Yes, No");
+		SetNodeStateNames_bn(pack_health, "Yes, No");
+		CheckError();
 
-	SetNodeStateNames_bn (VisitAsia,   "visit,   no_visit");
-	SetNodeStateNames_bn (Tuberculosis,"present, absent");
-	SetNodeStateNames_bn (Smoking,     "smoker,  nonsmoker");
-	SetNodeStateNames_bn (Cancer,      "present, absent");
-	SetNodeStateNames_bn (TbOrCa,      "true,    false");
-	SetNodeStateNames_bn (XRay,        "abnormal,normal");
-	SetNodeTitle_bn (TbOrCa, "Tuberculosis or Cancer");
-	SetNodeTitle_bn (Cancer, "Lung Cancer");
-	CHKERR
+		AddLink_bn(s_t, s_t_next);
+		AddLink_bn(s_t_next, health);
+		AddLink_bn(s_t_next, weapon);
+		AddLink_bn(s_t_next, opponents_weapon);
+		AddLink_bn(s_t_next, heard_noise);
+		AddLink_bn(s_t_next, near_enemies);
+		AddLink_bn(s_t_next, pack_weapon);
+		AddLink_bn(s_t_next, pack_health);
+		CheckError();
+		
+		// S_t
+		SetNodeProbs(s_t, 0.33, 0.33, 0.33, 0.33, 0.33, 0.33);
+		
+		// S_t_next								Attack	SWeapon	SEnergy	Explore	Flee	DDanger
+		SetNodeProbs(s_t_next, "Attack",		0.80,	0.02,	0.05,	0.01,	0.10,	0.02	);
+		SetNodeProbs(s_t_next, "SearchWeapon",	0.80,	0.02,	0.05,	0.01,	0.10,	0.02	);
+		SetNodeProbs(s_t_next, "SearchEnergy",	0.80,	0.02,	0.05,	0.01,	0.10,	0.02	);
+		SetNodeProbs(s_t_next, "Explore",		0.80,	0.02,	0.05,	0.01,	0.10,	0.02	);
+		SetNodeProbs(s_t_next, "Flee",			0.80,	0.02,	0.05,	0.01,	0.10,	0.02	);
+		SetNodeProbs(s_t_next, "DetectDanger",	0.80,	0.02,	0.05,	0.01,	0.10,	0.02	);
 
-	AddLink_bn (VisitAsia, Tuberculosis);
-	AddLink_bn (Smoking, Cancer);
-	AddLink_bn (Tuberculosis, TbOrCa);
-	AddLink_bn (Cancer, TbOrCa);
-	AddLink_bn (TbOrCa, XRay);
-	CHKERR
-	
-	SetNodeProbs (VisitAsia, 0.01, 0.99);
-	
-	SetNodeProbs (Tuberculosis, "visit",    0.05, 0.95);
-	SetNodeProbs (Tuberculosis, "no_visit", 0.01, 0.99);
+		// Health								High	Low
+		SetNodeProbs(s_t_next, "Attack",		0.80,	0.02	);
+		SetNodeProbs(s_t_next, "SearchWeapon",	0.80,	0.02	);
+		SetNodeProbs(s_t_next, "SearchEnergy",	0.80,	0.02	);
+		SetNodeProbs(s_t_next, "Explore",		0.80,	0.02	);
+		SetNodeProbs(s_t_next, "Flee",			0.80,	0.02	);
+		SetNodeProbs(s_t_next, "DetectDanger",	0.80,	0.02	);
 
-	SetNodeProbs (Smoking, 0.5, 0.5);
+		// Weapon								Armed	Unarmed
+		SetNodeProbs(s_t_next, "Attack",		0.80,	0.02	);
+		SetNodeProbs(s_t_next, "SearchWeapon",	0.80,	0.02	);
+		SetNodeProbs(s_t_next, "SearchEnergy",	0.80,	0.02	);
+		SetNodeProbs(s_t_next, "Explore",		0.80,	0.02	);
+		SetNodeProbs(s_t_next, "Flee",			0.80,	0.02	);
+		SetNodeProbs(s_t_next, "DetectDanger",	0.80,	0.02	);
 
-	SetNodeProbs (Cancer, "smoker",    0.1,  0.9);
-	SetNodeProbs (Cancer, "nonsmoker", 0.01, 0.99);
+		// Weapon								Armed	Unarmed
+		SetNodeProbs(s_t_next, "Attack",		0.80,	0.02	);
+		SetNodeProbs(s_t_next, "SearchWeapon",	0.80,	0.02	);
+		SetNodeProbs(s_t_next, "SearchEnergy",	0.80,	0.02	);
+		SetNodeProbs(s_t_next, "Explore",		0.80,	0.02	);
+		SetNodeProbs(s_t_next, "Flee",			0.80,	0.02	);
+		SetNodeProbs(s_t_next, "DetectDanger",	0.80,	0.02	);
 
-	//                   Tuberculosis Cancer
-	SetNodeProbs (TbOrCa, "present", "present", 1.0, 0.0);
-	SetNodeProbs (TbOrCa, "present", "absent",  1.0, 0.0);
-	SetNodeProbs (TbOrCa, "absent",  "present", 1.0, 0.0);
-	SetNodeProbs (TbOrCa, "absent",  "absent",  0.0, 1.0);
+		// HeardNoise								Alto	Bajo
+		SetNodeProbs(s_t_next, "Attack", 0.80, 0.02);
+		SetNodeProbs(s_t_next, "SearchWeapon", 0.80, 0.02);
+		SetNodeProbs(s_t_next, "SearchEnergy", 0.80, 0.02);
+		SetNodeProbs(s_t_next, "Explore", 0.80, 0.02);
+		SetNodeProbs(s_t_next, "Flee", 0.80, 0.02);
+		SetNodeProbs(s_t_next, "DetectDanger", 0.80, 0.02);
 
-	//                  TbOrCa  Abnormal Normal
-	SetNodeProbs (XRay, "true",  0.98,  0.02);
-	SetNodeProbs (XRay, "false", 0.05,  0.95);
-	CHKERR
+		// NearEnemies								Alto	Bajo
+		SetNodeProbs(s_t_next, "Attack", 0.80, 0.02);
+		SetNodeProbs(s_t_next, "SearchWeapon", 0.80, 0.02);
+		SetNodeProbs(s_t_next, "SearchEnergy", 0.80, 0.02);
+		SetNodeProbs(s_t_next, "Explore", 0.80, 0.02);
+		SetNodeProbs(s_t_next, "Flee", 0.80, 0.02);
+		SetNodeProbs(s_t_next, "DetectDanger", 0.80, 0.02);
 
-	CompileNet_bn (net);
-	CHKERR
+		// PackWeapon								Alto	Bajo
+		SetNodeProbs(s_t_next, "Attack", 0.80, 0.02);
+		SetNodeProbs(s_t_next, "SearchWeapon", 0.80, 0.02);
+		SetNodeProbs(s_t_next, "SearchEnergy", 0.80, 0.02);
+		SetNodeProbs(s_t_next, "Explore", 0.80, 0.02);
+		SetNodeProbs(s_t_next, "Flee", 0.80, 0.02);
+		SetNodeProbs(s_t_next, "DetectDanger", 0.80, 0.02);
 
-	belief = GetNodeBelief ("Tuberculosis", "present", net);
-	CHKERR
+		// PackHealth								Alto	Bajo
+		SetNodeProbs(s_t_next, "Attack", 0.80, 0.02);
+		SetNodeProbs(s_t_next, "SearchWeapon", 0.80, 0.02);
+		SetNodeProbs(s_t_next, "SearchEnergy", 0.80, 0.02);
+		SetNodeProbs(s_t_next, "Explore", 0.80, 0.02);
+		SetNodeProbs(s_t_next, "Flee", 0.80, 0.02);
+		SetNodeProbs(s_t_next, "DetectDanger", 0.80, 0.02);
 
-	printf ("The probability of tuberculosis is %g\n\n", belief);
+		CheckError();
 
-	EnterFinding ("XRay", "abnormal", net);
-	belief = GetNodeBelief ("Tuberculosis", "present", net);
-	CHKERR
+		CompileNet_bn(net);
+		CheckError();
 
-	printf ("Given an abnormal X-ray, \n\
-         the probability of tuberculosis is %g\n\n", belief);
+		belief = GetNodeBelief ("Tuberculosis", "present", net);
+		CheckError();
 
-	EnterFinding ("VisitAsia", "visit", net);
-	belief = GetNodeBelief ("Tuberculosis", "present", net);
-	CHKERR
+		printf ("The probability of tuberculosis is %g\n\n", belief);
 
-	printf ("Given an abnormal X-ray and a visit to Asia, \n\
-	     the probability of tuberculosis is %g\n\n", belief);
+		EnterFinding ("XRay", "abnormal", net);
+		belief = GetNodeBelief ("Tuberculosis", "present", net);
+		CheckError();
 
-	EnterFinding ("Cancer", "present", net);
-	belief = GetNodeBelief ("Tuberculosis", "present", net);
-	CHKERR
+		printf ("Given an abnormal X-ray, \n\
+			 the probability of tuberculosis is %g\n\n", belief);
 
-	printf ("Given abnormal X-ray, Asia visit, and lung cancer, \n\
-         the probability of tuberculosis is %g\n\n", belief);
+		EnterFinding ("VisitAsia", "visit", net);
+		belief = GetNodeBelief ("Tuberculosis", "present", net);
+		CheckError();
 
-end:
-	DeleteNet_bn (net);
-	res = CloseNetica_bn (env, mesg);
+		printf ("Given an abnormal X-ray and a visit to Asia, \n\
+			 the probability of tuberculosis is %g\n\n", belief);
+
+		EnterFinding ("Cancer", "present", net);
+		belief = GetNodeBelief ("Tuberculosis", "present", net);
+		CheckError();
+
+		printf ("Given abnormal X-ray, Asia visit, and lung cancer, \n\
+			 the probability of tuberculosis is %g\n\n", belief);
+
+	} catch (const std::exception& e) {
+		std::cout << "Error: " << e.what();
+	}
+
+	DeleteNet_bn(net);
+	res = CloseNetica_bn(env, mesg);
 	printf ("%s\n", mesg);
 	printf ("Press <enter> key to quit ", mesg);
 	getchar();
 	return (res < 0) ? -1 : 0;
-
-error:
-	fprintf (stderr, "NeticaDemo: Error in %s\n", 
-	         ErrorMessage_ns (GetError_ns (env, ERROR_ERR, NULL)));
-	goto end;
 }
 
