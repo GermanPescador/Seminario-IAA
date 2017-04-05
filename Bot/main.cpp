@@ -67,37 +67,37 @@ int main (void){
 		// S_t
 		SetNodeProbs(s_t, 0.33, 0.33, 0.33, 0.33, 0.33, 0.33);
 		
-		// S_t_next								Attack	SWeapon	SEnergy	Explore	Flee	DDanger
+		// S_t_next					Attack	SWeapon	SEnergy	Explore	Flee	DDanger
 		SetNodeProbs(s_t_next, "Attack",		0.80,	0.02,	0.05,	0.01,	0.10,	0.02	);
-		SetNodeProbs(s_t_next, "SearchWeapon",	0.80,	0.02,	0.05,	0.01,	0.10,	0.02	);
-		SetNodeProbs(s_t_next, "SearchEnergy",	0.80,	0.02,	0.05,	0.01,	0.10,	0.02	);
-		SetNodeProbs(s_t_next, "Explore",		0.80,	0.02,	0.05,	0.01,	0.10,	0.02	);
-		SetNodeProbs(s_t_next, "Flee",			0.80,	0.02,	0.05,	0.01,	0.10,	0.02	);
-		SetNodeProbs(s_t_next, "DetectDanger",	0.80,	0.02,	0.05,	0.01,	0.10,	0.02	);
+		SetNodeProbs(s_t_next, "SearchWeapon",		0.01,	0.70,	0.02,	0.10,	0.01	0.16	);
+		SetNodeProbs(s_t_next, "SearchEnergy",		0.01,	0.02,	0.80,	0.07,	0.07,	0.03	);
+		SetNodeProbs(s_t_next, "Explore",		0.04,	0.04,	0.01,	0.70,	0.01,	0.20	);
+		SetNodeProbs(s_t_next, "Flee",			0.01,	0.01,	0.10,	0.01,	0.85,	0.02	);
+		SetNodeProbs(s_t_next, "DetectDanger",		0.40,	0.04,	0.03,	0.03,	0.30,	0.20	);
 
-		// Health								High	Low
-		SetNodeProbs(s_t_next, "Attack",		0.80,	0.02	);
-		SetNodeProbs(s_t_next, "SearchWeapon",	0.80,	0.02	);
-		SetNodeProbs(s_t_next, "SearchEnergy",	0.80,	0.02	);
-		SetNodeProbs(s_t_next, "Explore",		0.80,	0.02	);
-		SetNodeProbs(s_t_next, "Flee",			0.80,	0.02	);
-		SetNodeProbs(s_t_next, "DetectDanger",	0.80,	0.02	);
+		// Health					High	Low
+		SetNodeProbs(s_t_next, "Attack",		0.75,	0.25	);
+		SetNodeProbs(s_t_next, "SearchWeapon",		0.60,	0.40	);
+		SetNodeProbs(s_t_next, "SearchEnergy",		0.30,	0.70	);
+		SetNodeProbs(s_t_next, "Explore",		0.80,	0.20	);
+		SetNodeProbs(s_t_next, "Flee",			0.15,	0.85	);
+		SetNodeProbs(s_t_next, "DetectDanger",		0.55,	0.45	);
 
-		// Weapon								Armed	Unarmed
-		SetNodeProbs(s_t_next, "Attack",		0.80,	0.02	);
-		SetNodeProbs(s_t_next, "SearchWeapon",	0.80,	0.02	);
-		SetNodeProbs(s_t_next, "SearchEnergy",	0.80,	0.02	);
-		SetNodeProbs(s_t_next, "Explore",		0.80,	0.02	);
-		SetNodeProbs(s_t_next, "Flee",			0.80,	0.02	);
-		SetNodeProbs(s_t_next, "DetectDanger",	0.80,	0.02	);
+		// Weapon					Armed	Unarmed
+		SetNodeProbs(s_t_next, "Attack",		0.99,	0.01	);
+		SetNodeProbs(s_t_next, "SearchWeapon",		0.10,	0.90	);
+		SetNodeProbs(s_t_next, "SearchEnergy",		0.40,	0.60	);
+		SetNodeProbs(s_t_next, "Explore",		0.80,	0.20	);
+		SetNodeProbs(s_t_next, "Flee",			0.30,	0.70	);
+		SetNodeProbs(s_t_next, "DetectDanger",		0.45,	0.55	);
 
-		// Weapon								Armed	Unarmed
-		SetNodeProbs(s_t_next, "Attack",		0.80,	0.02	);
-		SetNodeProbs(s_t_next, "SearchWeapon",	0.80,	0.02	);
-		SetNodeProbs(s_t_next, "SearchEnergy",	0.80,	0.02	);
-		SetNodeProbs(s_t_next, "Explore",		0.80,	0.02	);
-		SetNodeProbs(s_t_next, "Flee",			0.80,	0.02	);
-		SetNodeProbs(s_t_next, "DetectDanger",	0.80,	0.02	);
+		// OpponentsWeapon				Armed	Unarmed
+		SetNodeProbs(s_t_next, "Attack",		0.40,	0.60	);
+		SetNodeProbs(s_t_next, "SearchWeapon",		0.70,	0.30	);
+		SetNodeProbs(s_t_next, "SearchEnergy",		0.60,	0.40	);
+		SetNodeProbs(s_t_next, "Explore",		0.50,	0.50	);
+		SetNodeProbs(s_t_next, "Flee",			0.70,	0.30	);
+		SetNodeProbs(s_t_next, "DetectDanger",		0.50,	0.50	);
 
 		// HeardNoise								Alto	Bajo
 		SetNodeProbs(s_t_next, "Attack", 0.80, 0.02);
