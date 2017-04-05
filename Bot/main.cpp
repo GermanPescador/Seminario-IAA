@@ -3,8 +3,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <cstdlib>
+#include <ctime>
 #include "Netica.h"
 #include "NeticaEx.h"
+
+extern environ_ns *env;
 
 void CheckError(int line) {
 	if (GetError_ns(env, ERROR_ERR, nullptr)) {
@@ -15,13 +19,102 @@ void CheckError(int line) {
 	}
 }
 
-extern environ_ns *env;
+const char* selectNodeState(const node_bn *node) {
+	int states = GetNodeNumberStates_bn(node);
+	int selected = -1;
+
+	std::wcout << "\n" << GetNodeName_bn(node) << " state:" << std::endl;
+	for (int i = 0; i < states; ++i) {
+		std::cout << "\t" << i << "- " << GetNodeStateName_bn(node, i) << std::endl;
+	}
+	while ((selected < 0) || (selected >= states)) {
+		std::cout << "Select state: ";
+		std::cin >> selected;
+	}
+	return GetNodeStateName_bn(node, selected);
+}
+
+const char* AskInitialState(net_bn *net) {
+	return selectNodeState(GetNode("S_t", net));
+}
+
+void setSensors(net_bn *net) {
+	char buffer[128] = { '\0' };
+
+	strcpy(buffer, selectNodeState(GetNode("Health", net)));
+	EnterFinding("Health", buffer, net);
+
+	strcpy(buffer, selectNodeState(GetNode("Weapon", net)));
+	EnterFinding("Weapon", buffer, net);
+
+	strcpy(buffer, selectNodeState(GetNode("OpponentsWeapon", net)));
+	EnterFinding("OpponentsWeapon", buffer, net);
+
+	strcpy(buffer, selectNodeState(GetNode("HeardNoise", net)));
+	EnterFinding("HeardNoise", buffer, net);
+
+	strcpy(buffer, selectNodeState(GetNode("NearEnemies", net)));
+	EnterFinding("NearEnemies", buffer, net);
+
+	strcpy(buffer, selectNodeState(GetNode("PackWeapon", net)));
+	EnterFinding("PackWeapon", buffer, net);
+
+	strcpy(buffer, selectNodeState(GetNode("PackHealth", net)));
+	EnterFinding("PackHealth", buffer, net);
+}
+
+int selectState(double beliefs[], int size) {
+	double random = std::rand() / double(RAND_MAX);
+	double inf_limit = 0;
+	double sup_limit = 0;
+
+	for (int i = 0; i < size; ++i) {
+		sup_limit += beliefs[i];
+		if ((random > inf_limit) && (random < sup_limit))
+			return i;
+		inf_limit += beliefs[i];
+	}
+	return -1;
+}
+
+void step(net_bn *net) {
+	const int kStates = 6;
+	char buffer[128] = { '\0' };
+	double beliefs[kStates];
+	int new_state = -1;
+	
+	node_bn* S_t_next = GetNode("S_t_next", net);
+	for (int i = 0; i < kStates; ++i) {
+		strcpy(buffer, GetNodeStateName_bn(S_t_next, i));
+		beliefs[i] = GetNodeBelief("S_t_next", buffer, net);
+	}
+
+	while (new_state == -1)
+		new_state = selectState(beliefs, kStates);
+
+	std::cout << "\nNew state will be: " << GetNodeStateName_bn(S_t_next, new_state);
+	std::cout << " its probability was: " << beliefs[new_state] << std::endl;
+
+	RetractNodeFindings_bn(GetNode("S_t", net));
+	RetractNodeFindings_bn(GetNode("Health", net));
+	RetractNodeFindings_bn(GetNode("Weapon", net));
+	RetractNodeFindings_bn(GetNode("OpponentsWeapon", net));
+	RetractNodeFindings_bn(GetNode("HeardNoise", net));
+	RetractNodeFindings_bn(GetNode("NearEnemies", net));
+	RetractNodeFindings_bn(GetNode("PackWeapon", net));
+	RetractNodeFindings_bn(GetNode("PackHealth", net));
+
+	strcpy(buffer, GetNodeStateName_bn(S_t_next, new_state));
+	EnterFinding("S_t", buffer, net);
+}
 
 int main (void){
 	net_bn *net;
 	node_bn *s_t, *s_t_next, *health, *weapon, *opponents_weapon, *heard_noise, *near_enemies, *pack_weapon, *pack_health;
 	char mesg[MESG_LEN_ns];
 	int res;
+
+	std::srand(std::time(0));
 	
 	try {
 		env = NewNeticaEnviron_ns(nullptr, nullptr, nullptr);
@@ -80,57 +173,57 @@ int main (void){
 		CheckError(__LINE__);
 
 		// Health								High	Low
-		SetNodeProbs(s_t_next, "Attack",		0.75,	0.25);
-		SetNodeProbs(s_t_next, "SearchWeapon",	0.60,	0.40);
-		SetNodeProbs(s_t_next, "SearchEnergy",	0.30,	0.70);
-		SetNodeProbs(s_t_next, "Explore",		0.80,	0.20);
-		SetNodeProbs(s_t_next, "Flee",			0.15,	0.85);
-		SetNodeProbs(s_t_next, "DetectDanger",	0.55,	0.45);
+		SetNodeProbs(health, "Attack",			0.75,	0.25);
+		SetNodeProbs(health, "SearchWeapon",	0.60,	0.40);
+		SetNodeProbs(health, "SearchEnergy",	0.30,	0.70);
+		SetNodeProbs(health, "Explore",			0.80,	0.20);
+		SetNodeProbs(health, "Flee",			0.15,	0.85);
+		SetNodeProbs(health, "DetectDanger",	0.55,	0.45);
 		CheckError(__LINE__);
 
 		// Weapon								Armed	Unarmed
-		SetNodeProbs(s_t_next, "Attack",		0.99,	0.01);
-		SetNodeProbs(s_t_next, "SearchWeapon",	0.10,	0.90);
-		SetNodeProbs(s_t_next, "SearchEnergy",	0.40,	0.60);
-		SetNodeProbs(s_t_next, "Explore",		0.80,	0.20);
-		SetNodeProbs(s_t_next, "Flee",			0.30,	0.70);
-		SetNodeProbs(s_t_next, "DetectDanger",	0.45,	0.55);
+		SetNodeProbs(weapon, "Attack",			0.99,	0.01);
+		SetNodeProbs(weapon, "SearchWeapon",	0.10,	0.90);
+		SetNodeProbs(weapon, "SearchEnergy",	0.40,	0.60);
+		SetNodeProbs(weapon, "Explore",			0.80,	0.20);
+		SetNodeProbs(weapon, "Flee",			0.30,	0.70);
+		SetNodeProbs(weapon, "DetectDanger",	0.45,	0.55);
 		CheckError(__LINE__);
 
-		// OpponentsWeapon						Armed	Unarmed
-		SetNodeProbs(s_t_next, "Attack",		0.40,	0.60);
-		SetNodeProbs(s_t_next, "SearchWeapon",	0.70,	0.30);
-		SetNodeProbs(s_t_next, "SearchEnergy",	0.60,	0.40);
-		SetNodeProbs(s_t_next, "Explore",		0.50,	0.50);
-		SetNodeProbs(s_t_next, "Flee",			0.70,	0.30);
-		SetNodeProbs(s_t_next, "DetectDanger",	0.50,	0.50);
+		// OpponentsWeapon								Armed	Unarmed
+		SetNodeProbs(opponents_weapon, "Attack",		0.40,	0.60);
+		SetNodeProbs(opponents_weapon, "SearchWeapon",	0.70,	0.30);
+		SetNodeProbs(opponents_weapon, "SearchEnergy",	0.60,	0.40);
+		SetNodeProbs(opponents_weapon, "Explore",		0.50,	0.50);
+		SetNodeProbs(opponents_weapon, "Flee",			0.70,	0.30);
+		SetNodeProbs(opponents_weapon, "DetectDanger",	0.50,	0.50);
 		CheckError(__LINE__);
 
 		// HeardNoise								Yes		No
-		SetNodeProbs(heard_noise, "Attack",			0.80,	0.02	);
-		SetNodeProbs(heard_noise, "SearchWeapon",	0.80,	0.02	);
-		SetNodeProbs(heard_noise, "SearchEnergy",	0.80,	0.02	);
-		SetNodeProbs(heard_noise, "Explore",		0.80,	0.02	);
-		SetNodeProbs(heard_noise, "Flee",			0.80,	0.02	);
-		SetNodeProbs(heard_noise, "DetectDanger",	0.80,	0.02	);
+		SetNodeProbs(heard_noise, "Attack",			0.70,	0.30);
+		SetNodeProbs(heard_noise, "SearchWeapon",	0.60,	0.40);
+		SetNodeProbs(heard_noise, "SearchEnergy",	0.65,	0.35);
+		SetNodeProbs(heard_noise, "Explore",		0.30,	0.70);
+		SetNodeProbs(heard_noise, "Flee",			0.60,	0.40);
+		SetNodeProbs(heard_noise, "DetectDanger",	0.80,	0.20);
 		CheckError(__LINE__);
 
 		// NearEnemies								Many	Few
-		SetNodeProbs(near_enemies, "Attack",		0.80,	0.02	);
-		SetNodeProbs(near_enemies, "SearchWeapon",	0.80,	0.02	);
-		SetNodeProbs(near_enemies, "SearchEnergy",	0.80,	0.02	);
-		SetNodeProbs(near_enemies, "Explore",		0.80,	0.02	);
-		SetNodeProbs(near_enemies, "Flee",			0.80,	0.02	);
-		SetNodeProbs(near_enemies, "DetectDanger",	0.80,	0.02	);
+		SetNodeProbs(near_enemies, "Attack",		0.30,	0.70);
+		SetNodeProbs(near_enemies, "SearchWeapon",	0.45,	0.55);
+		SetNodeProbs(near_enemies, "SearchEnergy",	0.60,	0.40);
+		SetNodeProbs(near_enemies, "Explore",		0.40,	0.60);
+		SetNodeProbs(near_enemies, "Flee",			0.80,	0.20);
+		SetNodeProbs(near_enemies, "DetectDanger",	0.20,	0.80);
 		CheckError(__LINE__);
 
 		// PackWeapon								Yes		No
-		SetNodeProbs(pack_weapon, "Attack",			0.80,	0.02	);
-		SetNodeProbs(pack_weapon, "SearchWeapon",	0.80,	0.02	);
-		SetNodeProbs(pack_weapon, "SearchEnergy",	0.80,	0.02	);
-		SetNodeProbs(pack_weapon, "Explore",		0.80,	0.02	);
-		SetNodeProbs(pack_weapon, "Flee",			0.80,	0.02	);
-		SetNodeProbs(pack_weapon, "DetectDanger",	0.80,	0.02	);
+		SetNodeProbs(pack_weapon, "Attack",			0.50,	0.50);
+		SetNodeProbs(pack_weapon, "SearchWeapon",	0.90,	0.10);
+		SetNodeProbs(pack_weapon, "SearchEnergy",	0.45,	0.55);
+		SetNodeProbs(pack_weapon, "Explore",		0.60,	0.40);
+		SetNodeProbs(pack_weapon, "Flee",			0.30,	0.70);
+		SetNodeProbs(pack_weapon, "DetectDanger",	0.40,	0.60);
 		CheckError(__LINE__);
 
 		// PackHealth								Yes		No
@@ -145,9 +238,21 @@ int main (void){
 		CompileNet_bn(net);
 		CheckError(__LINE__);
 
-		std::cout << ("Health", "High", net) << std::endl;
-		WriteNet_bn(net, NewFileStream_ns("test.dne", env, NULL));
+		WriteNet_bn(net, NewFileStream_ns("../Net/bot.dne", env, NULL));
 		CheckError(__LINE__);
+
+		// Set the initial state
+		char buffer[128] = { '\0' };
+		strcpy(buffer, AskInitialState(net));
+		EnterFinding("S_t", buffer, net);
+
+
+		while (true) {
+			setSensors(net);
+			CheckError(__LINE__);
+			step(net);
+			CheckError(__LINE__);
+		}
 
 		/*
 		belief = GetNodeBelief ("Tuberculosis", "present", net);
@@ -182,8 +287,7 @@ int main (void){
 
 	DeleteNet_bn(net);
 	res = CloseNetica_bn(env, mesg);
-	std::cout << mesg << std::endl;
-	getchar();
+	std::cout << "\n" << mesg << std::endl;
 	return (res < 0) ? -1 : 0;
 }
 
