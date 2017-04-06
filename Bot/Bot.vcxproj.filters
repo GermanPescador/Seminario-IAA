@@ -7,6 +7,9 @@
     <ClCompile Include="main.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="Bot.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Netica.h">
@@ -14,6 +17,12 @@
     </ClInclude>
     <ClInclude Include="NeticaEx.h">
       <Filter>Source Netica</Filter>
+    </ClInclude>
+    <ClInclude Include="Bot.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="global.h">
+      <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

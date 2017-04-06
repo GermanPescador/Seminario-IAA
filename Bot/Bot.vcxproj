@@ -122,10 +122,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Bot.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="NeticaEx.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Bot.h" />
+    <ClInclude Include="global.h" />
     <ClInclude Include="Netica.h" />
     <ClInclude Include="NeticaEx.h" />
   </ItemGroup>
