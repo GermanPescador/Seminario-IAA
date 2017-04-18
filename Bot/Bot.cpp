@@ -1,8 +1,10 @@
 #include "Bot.h"
 
+
 Bot::Bot():
 	net_(nullptr)
-{}
+{
+}
 
 Bot::Bot(const std::string& net_path):
 	net_(nullptr)
@@ -25,11 +27,6 @@ void Bot::LoadNet(const std::string& net_path)
 	CheckError();
 	CompileNet_bn(net_);
 	CheckError();
-}
-
-net_bn* Bot::GetNet()
-{
-	return net_;
 }
 
 void Bot::exec(const std::vector<char*>& node_names)

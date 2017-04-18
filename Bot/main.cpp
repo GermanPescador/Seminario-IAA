@@ -17,12 +17,13 @@ int main (void){
 	std::srand(std::time(0));
 	
 	try {
+		// Inicializa Netica
 		env = NewNeticaEnviron_ns(nullptr, nullptr, nullptr);
 		res = InitNetica2_bn(env, mesg);
-
 		std::cout << mesg << std::endl;
 		if (res < 0)  return -1;
 
+		// Crea el bot
 		Bot bot("../Net/bot.dne");
 		bot.AskForNodeState("S_t");
 		while (true) {
