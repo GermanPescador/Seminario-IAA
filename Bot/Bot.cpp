@@ -47,6 +47,9 @@ void Bot::exec(const std::vector<char*>& node_names)
 
 	int new_state = selectRandomFromProb(states_prob);
 
+	std::cout << "\nProbabilities obtained for the new state are:";
+	for(int i = 0; i < states_prob.size(); i++)
+		std::cout << "\n\t" << GetNodeStateName_bn(S_t_next, i) << ": " << states_prob[i];
 	std::cout << "\nNew state will be: " << GetNodeStateName_bn(S_t_next, new_state);
 	std::cout << " its probability was: " << states_prob[new_state] << std::endl;
 
